@@ -29,12 +29,12 @@ app.all("/", (req, res) => {
   res.send("hello from orgsnize-it api server!");
 });
 // ________________routes:
-app.use("/api/users", userRoute);
-app.use("/api/auth", authRoute);
-app.use("/api/tasks", taskRoute);
-app.use("/api/notes", noteRoute);
-app.use("/api/archive-notes", archiveNotesRoute);
-app.use("/api/messages", messageRoute);
+app.use("/users", userRoute);
+app.use("/auth", authRoute);
+app.use("/tasks", taskRoute);
+app.use("/notes", noteRoute);
+app.use("/archive-notes", archiveNotesRoute);
+app.use("/messages", messageRoute);
 
 //_________________handling errors:
 app.use((err, req, res, nxt) => {
