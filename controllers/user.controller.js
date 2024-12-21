@@ -5,7 +5,6 @@ const EXPIRES_LIST = require("../config/expires_list");
 const bcrypt = require("bcrypt");
 const genTokens = require("../utils/genTokens");
 const asyncFunction = require("../middlewares/asyncFunction");
-const REGEX = require("../config/regex");
 
 // 1) get all users:
 const getAllUsers = asyncFunction(async (req, res) => {
@@ -50,7 +49,7 @@ const registerUser = asyncFunction(async (req, res) => {
   if (usernameExist)
     return res
       .status(409)
-      .json({ errMsg: `username \"${username}\" has been already taken!` });
+      .json({ errMsg: `username "${username}" has been already taken!` });
   // 2. hashing password:
   let salt = await bcrypt.genSalt(10);
   const hashPwd = await bcrypt.hash(password, salt);

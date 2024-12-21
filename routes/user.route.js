@@ -5,7 +5,7 @@ const userController = require("../controllers/user.controller");
 const validateMW = require("../middlewares/validateMW");
 const objectIdMWValidator = require("../middlewares/objectIdMWValidator");
 const verifyMWToken = require("../middlewares/verifyMWToken");
-const verifyMWPermissions = require("../later/verifyMWPermissions");
+const verifyMWPermissions = require("../middlewares/verifyMWPermissions");
 // schema:
 const userRegistrationSchema = require("../utils/userRegistration.schema");
 const userInfoSchema = require("../utils/userInfo.schema");

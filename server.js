@@ -37,15 +37,12 @@ app.use("/archive-notes", archiveNotesRoute);
 app.use("/messages", messageRoute);
 
 //_________________handling errors:
-app.use((err, req, res, nxt) => {
-  console.log(err.message);
-  console.log(err);
+app.use((err, req, res) => {
   res.status(400).json(err);
 });
 // ________________unknown routes:
 app.use("/*", (req, res) => {
-  console.log("unkwon url");
-  res.status(404).send("not found!");
+  res.status(404).send("not found: unkown url!");
 });
 
 // ________________connect to database & run the server:

@@ -19,7 +19,6 @@ const getUserMsgs = asyncFunction(async (req, res) => {
   let userId = req.params?.userId;
   let userExist = await User.findById(userId).exec();
   if (!userExist) return res.status(404).json({ errMsg: "user not found!" });
-  console.log("d");
   // 2. get user`s msgs from DB:
   const useMsgs = await Message.find({ userId }).select({
     userId: 0,

@@ -1,4 +1,3 @@
-const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -110,7 +109,6 @@ const changePassword = asyncFunction(async (req, res) => {
   // 1. check data:
   if (!oldPwd || !newPwd || !REGEX.PASSWORD.test(newPwd))
     return res.status(400).json({ errMsg: "invalid data!" });
-  console.log(req.body)
   // 2. find User:
   const foundUser = await User.findById(userId).exec();
   if (!foundUser) return res.status(404).json({ errMsg: "user not found!" });
