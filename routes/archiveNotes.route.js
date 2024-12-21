@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const archiveController = require("../controllers/archiveController");
+const archiveController = require("../controllers/archive.controller");
 const objectIdMWValidator = require("../middlewares/objectIdMWValidator");
 
 // middlewares:

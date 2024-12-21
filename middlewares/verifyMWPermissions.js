@@ -1,3 +1,5 @@
+const asyncFunction = require("./asyncFunction");
+
 const verifyMWPermissions = (allowedRoles) =>
   asyncFunction(async (req, res, nxt) => {
     // 1. check roles:
@@ -9,3 +11,5 @@ const verifyMWPermissions = (allowedRoles) =>
     if (!userPermission) return res.sendStatus(401);
     nxt();
   });
+
+module.exports = verifyMWPermissions;
