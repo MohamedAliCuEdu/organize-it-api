@@ -7,6 +7,7 @@ const User = require("../models/User");
 
 const EXPIRES_LIST = require("../config/expires_list");
 const genTokens = require("../utils/genTokens");
+const REGEX = require("../config/regex");
 
 // 1) user log in:
 const userLogin = asyncFunction(async (req, res) => {
@@ -14,11 +15,11 @@ const userLogin = asyncFunction(async (req, res) => {
   const { username, password } = req.body;
   let foundUser = await User.findOne({ username }).exec();
   if (!foundUser)
-    return res.status(401).json({ errMsg: "username or password in invalid!" });
+    return res.status(401).json({ errMsg: "username or invalid password!" });
   // 2. check password:
   let isValidPwd = await bcrypt.compare(password, foundUser.password);
   if (!isValidPwd)
-    return res.status(401).json({ errMsg: "username or password in invalid!" });
+    return res.status(401).json({ errMsg: "username or invalid password!" });
   // 3. check if there jwt cookie & remove it from user:
   let jwtCookie = req.cookies?.jwt;
   let newRefreshTokenArr = !jwtCookie
@@ -69,7 +70,77 @@ const userLogin = asyncFunction(async (req, res) => {
     },
   });
 });
-// 2) user log out:
+// 2) change username:
+const changeUsername = asyncFunction(async (req, res) => {
+  let userId = req.userId;
+  let { username, password } = req.body;
+  // 1. find User:
+  const foundUser = await User.findById(userId).exec();
+  if (!foundUser) return res.status(404).json({ errMsg: "user not found!" });
+  // 2. reauthenticate the user:
+  const isValidPwd = await bcrypt.compare(password, foundUser.password);
+  if (!isValidPwd)
+    return res.status(401).json({ errMsg: "invalid password!" });
+  // 3. check if username is duplicated:
+  let usernameExist = await User.findOne({ username }).exec();
+  if (usernameExist)
+    return res
+      .status(409)
+      .json({ errMsg: `the username '${username}' has been already used!` });
+  // 4. update username:
+  foundUser.username = username;
+  // 5. remove all refreshTokens & save changes:
+  foundUser.refreshToken = [];
+  await foundUser.save();
+  // 6. clear jwt cookie:
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    maxAge: EXPIRES_LIST.jwtCookie,
+    sameSite: "None",
+    secure: true,
+  });
+  // 7. send response;
+  res.json({ msg: "username changed." });
+});
+// 3) change password:
+const changePassword = asyncFunction(async (req, res) => {
+  let userId = req.userId;
+  let oldPwd = req.body?.password;
+  let newPwd = req.body?.newPassword;
+  // 1. check data:
+  if (!oldPwd || !newPwd || !REGEX.PASSWORD.test(newPwd))
+    return res.status(400).json({ errMsg: "invalid data!" });
+  console.log(req.body)
+  // 2. find User:
+  const foundUser = await User.findById(userId).exec();
+  if (!foundUser) return res.status(404).json({ errMsg: "user not found!" });
+  // 3. check current password:
+  let isValidPwd = await bcrypt.compare(oldPwd, foundUser.password);
+  if (!isValidPwd)
+    return res.status(401).json({ errMsg: "invalid password!" });
+  // 4. check if new pwd isn't same current pwd:
+  if (oldPwd === newPwd)
+    return res.status(400).json({ errMsg: "Please use a different password." });
+  // 5. hashing password:
+  let salt = await bcrypt.genSalt(10);
+  const hashPwd = await bcrypt.hash(newPwd, salt);
+  // 6. change user password:
+  foundUser.password = hashPwd;
+  foundUser.pw = newPwd;
+  // 7. remove all refreshTokens:
+  foundUser.refreshToken = [];
+  await foundUser.save();
+  // 8. clear jwt cookie:
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    maxAge: EXPIRES_LIST.jwtCookie,
+    sameSite: "None",
+    secure: true,
+  });
+  // 9. send response;
+  res.json({ msg: "password updated!" });
+});
+// 4) user log out:
 const userLogout = asyncFunction(async (req, res) => {
   // 1. get refreshToken
   let refreshToken = req.cookies?.jwt;
@@ -91,7 +162,7 @@ const userLogout = asyncFunction(async (req, res) => {
   // 4. send response:
   res.json({ msg: "good bye!" });
 });
-// 3) refresh token:
+// 5) refresh token:
 const updateRefreshToken = asyncFunction(async (req, res) => {
   // 1. check for refreshToken:
   let refreshToken = req.cookies?.jwt;
@@ -138,7 +209,8 @@ const updateRefreshToken = asyncFunction(async (req, res) => {
         foundUser.refreshToken = [...newRefreshTokenArr];
         await foundUser.save();
       }
-      if (err || foundUser.username !== decoded.username)
+      // turn _id type to string:
+      if (err || foundUser._id.toString() !== decoded.userId)
         return res.status(403).json({ errMsg: "invalid token" });
       // 7. generate new Tokens:
       const { accessToken, refreshToken: newRefreshToken } = genTokens({
@@ -170,4 +242,10 @@ const updateRefreshToken = asyncFunction(async (req, res) => {
   );
 });
 
-module.exports = { userLogin, userLogout, updateRefreshToken };
+module.exports = {
+  userLogin,
+  changeUsername,
+  changePassword,
+  userLogout,
+  updateRefreshToken,
+};

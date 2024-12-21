@@ -5,6 +5,7 @@ const EXPIRES_LIST = require("../config/expires_list");
 const bcrypt = require("bcrypt");
 const genTokens = require("../utils/genTokens");
 const asyncFunction = require("../middlewares/asyncFunction");
+const REGEX = require("../config/regex");
 
 // 1) get all users:
 const getAllUsers = asyncFunction(async (req, res) => {
@@ -88,27 +89,7 @@ const registerUser = asyncFunction(async (req, res) => {
     },
   });
 });
-// 4) update user auth [username & password]:
-const updateUserAuth = asyncFunction(async (req, res) => {
-  // 1. find User:
-  let userId = req.userId;
-  const foundUser = await User.findById(userId).exec();
-  if (!foundUser) return res.status(404).json({ errMsg: "user not found!" });
-  // 2. get data:
-  let username = req.body.username;
-  let password = req.body.password;
-  // 3. hashing password:
-  let salt = await bcrypt.genSalt(10);
-  const hashPwd = await bcrypt.hash(password, salt);
-  // 3. update user password & save:
-  await User.findByIdAndUpdate(
-    { _id: userId },
-    { username, password: hashPwd, pw: password }
-  );
-  // 4. send response;
-  res.json({ msg: "password updated!" });
-});
-// 5) editing user personal info:
+// 4) editing user personal info:
 const updateUserInfo = asyncFunction(async (req, res) => {
   // 1. find User:
   let userId = req.userId;
@@ -122,7 +103,7 @@ const updateUserInfo = asyncFunction(async (req, res) => {
   // 3. send response;
   res.json({ msg: "user information updated!" });
 });
-// 6) editing user profile:
+// 5) editing user pro file:
 const updateUserProfile = asyncFunction(async (req, res) => {
   // 1. find User:
   let userId = req.userId;
@@ -138,7 +119,7 @@ const updateUserProfile = asyncFunction(async (req, res) => {
   // 3. send response;
   res.json(result);
 });
-// 7) editing user's favourites:
+// 6) editing user's favourites:
 const updateUserFavourites = asyncFunction(async (req, res) => {
   // 1. find User:
   let userId = req.userId;
@@ -153,7 +134,7 @@ const updateUserFavourites = asyncFunction(async (req, res) => {
   // 4. send response;
   res.json(foundUser.favourites[favouriteType]);
 });
-// 8) delete user by its id:
+// 7) delete user by its id:
 const deleteUser = asyncFunction(async (req, res) => {
   // 1. find User:
   let userId = req.userId;
@@ -164,7 +145,7 @@ const deleteUser = asyncFunction(async (req, res) => {
   // 3. send response;
   res.json({ msg: "user has been deleted!" });
 });
-// 9) deleting all users:
+// 8) deleting all users:
 const deleteAllUsers = asyncFunction(async (req, res) => {
   // 1. check if there is any users:
   const allUsers = await User.find();
@@ -179,7 +160,6 @@ module.exports = {
   getAllUsers,
   getUser,
   registerUser,
-  updateUserAuth,
   updateUserProfile,
   updateUserInfo,
   updateUserFavourites,

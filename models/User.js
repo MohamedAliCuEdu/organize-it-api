@@ -57,7 +57,6 @@ const userSchema = new Schema(
       type: String,
       minLength: 1,
       maxLength: 70,
-      // match: REGEX.EDUCATION,
     },
     quote: {
       type: String,

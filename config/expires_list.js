@@ -1,5 +1,5 @@
 const EXPIRES_LIST = {
-  accessToken: "5000000s",
+  accessToken: "30s",
   refreshToken: "1d",
   jwtCookie: 24 * 60 * 60 * 1000,
 };
